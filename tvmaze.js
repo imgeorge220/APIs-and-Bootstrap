@@ -23,13 +23,13 @@ async function searchShows(query) {
   let showList = [];
   for (let show in response.data) {
     let defaultImg = 'https://store-images.s-microsoft.com/image/apps.65316.13510798887490672.6e1ebb25-96c8-4504-b714-1f7cbca3c5ad.f9514a23-1eb8-4916-a18e-99b1a9817d15?mode=scale&q=90&h=300&w=300';
-    let { image, name, summary } = response.data[show].show;
+    let { id, image, name, summary } = response.data[show].show;
     // let image = response.data[show].show.image;
     // let name = response.data[show].show.name;
     // let summary = response.data[show].show.summary;
     image = image ? image.medium : defaultImg;
-    let newShow = {name, summary, image}
-      showList.push(newShow);
+    let newShow = {id, name, summary, image};
+    showList.push(newShow);
   }
   return showList;
 }
@@ -44,6 +44,7 @@ function populateShows(shows) {
   $showsList.empty();
 
   for (let show of shows) {
+    let showId = show.id;
     let $item = $(
       `<div class="col-md-6 col-lg-3 Show" data-show-id="${show.id}">
          <div class="card" data-show-id="${show.id}">
@@ -51,12 +52,18 @@ function populateShows(shows) {
             <img class="card-img-top" src="${show.image}">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
+             <button id="show-episodes-${show.id}">Show Episodes</button>
            </div>
          </div>
        </div>
       `);
 
     $showsList.append($item);
+    $(`#show-episodes-${show.id}`).on('click', async function(e){
+     let episodesList = await getEpisodes(showId);
+     //console.log(episodesList);
+     //populateEpisodes(episodesList);
+    })
   }
 }
 
@@ -85,12 +92,28 @@ $("#search-form").on("submit", async function handleSearch (evt) {
  */
 
 async function getEpisodes(id) {
+  console.log('id',id);
   // TODO: get episodes from tvmaze
   //       you can get this by making GET request to
   //       http://api.tvmaze.com/shows/SHOW-ID-HERE/episodes
 
   // TODO: return array-of-episode-info, as described in docstring above
   let response = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
+  //console.log(response);
+  let episodeList = [];
   for (let episode in response.data) {
-  let { name, season, number} = response.data[episode];
+    let { name, season, number} = response.data[episode];
+    let newEpisodeList = {id, name, season, number};
+    episodeList.push(newEpisodeList);
+  }
+  return episodeList;
 }
+function populateEpisodes(episodes) {
+  let $episodeContainer = $('#episodes-list');
+  for (let episode of episodes) {
+    let newEpisode = `<li>${episode.name} (season ${episode.season}, number ${episode.number})</li>`;
+    $episodeContainer.append(newEpisode);
+  }
+  $('#episodes-area').show();
+}
+
