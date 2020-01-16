@@ -52,7 +52,7 @@ function populateShows(shows) {
             <img class="card-img-top" src="${show.image}">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
-             <button id="show-episodes-${show.id}">Show Episodes</button>
+             <button id="show-episodes-${show.id}" class="btn btn-primary" data-toggle="modal" data-target="#episodesModal">Show Episodes</button>
            </div>
          </div>
        </div>
@@ -62,7 +62,7 @@ function populateShows(shows) {
     $(`#show-episodes-${show.id}`).on('click', async function(e){
      let episodesList = await getEpisodes(showId);
      //console.log(episodesList);
-     //populateEpisodes(episodesList);
+     populateEpisodes(episodesList);
     })
   }
 }
@@ -91,25 +91,27 @@ $("#search-form").on("submit", async function handleSearch (evt) {
  *      { id, name, season, number }
  */
 
-async function getEpisodes(id) {
-  console.log('id',id);
+async function getEpisodes(showId) {
+  //console.log('id',id);
   // TODO: get episodes from tvmaze
   //       you can get this by making GET request to
   //       http://api.tvmaze.com/shows/SHOW-ID-HERE/episodes
 
   // TODO: return array-of-episode-info, as described in docstring above
-  let response = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
+  let response = await axios.get(`http://api.tvmaze.com/shows/${showId}/episodes`);
   //console.log(response);
   let episodeList = [];
   for (let episode in response.data) {
-    let { name, season, number} = response.data[episode];
+    let { id, name, season, number} = response.data[episode];
     let newEpisodeList = {id, name, season, number};
     episodeList.push(newEpisodeList);
   }
+  console.log(episodeList);
   return episodeList;
 }
 function populateEpisodes(episodes) {
   let $episodeContainer = $('#episodes-list');
+  $episodeContainer.empty();
   for (let episode of episodes) {
     let newEpisode = `<li>${episode.name} (season ${episode.season}, number ${episode.number})</li>`;
     $episodeContainer.append(newEpisode);
